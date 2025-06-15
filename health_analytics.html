@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Health Analytics - VetCare AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="analytics-page">
+        <div class="analytics-container">
+            <h1 class="page-title">Health Analytics</h1>
+
+            <!-- User Input Section -->
+            <div class="input-section">
+                <h2>Enter Animal Details</h2>
+                <form id="analyticsForm" class="analytics-form">
+                    <div class="form-group">
+                        <input type="text" id="animalId" placeholder="Cow ID / Name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="number" id="ageMonths" placeholder="Age in Months" required min="1" max="240">
+                    </div>
+                    
+                    <div class="form-group">
+                        <select id="milkingStatus" required>
+                            <option value="">Select Milking Status</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="number" id="weight" placeholder="Weight (kg) - Optional">
+                    </div>
+                    
+                    <div class="form-group">
+                        <select id="feedingPattern" required>
+                            <option value="">Select Feeding Pattern</option>
+                            <option value="organic">Organic</option>
+                            <option value="mixed">Mixed</option>
+                            <option value="commercial">Commercial</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="analyze-btn">Analyze</button>
+                </form>
+            </div>
+
+            <!-- Disease Statistics & Recovery Rates Carousel -->
+            <div class="stats-carousel">
+                <h2>📊 Disease Statistics & Recovery Rates</h2>
+                <div class="carousel-container">
+                    <button class="carousel-btn prev">❮</button>
+                    <div class="carousel-track">
+                        <!-- Cow Disease Cards -->
+                        <div class="stat-card cow">
+                            <h3>🐄 Lumpy Skin Disease (LSD)</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">87%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💉 Avg. Treatment Time:</span>
+                                <span class="stat-value">5 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases This Month:</span>
+                                <span class="stat-value">12</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card cow">
+                            <h3>🐄 Foot and Mouth Disease (FMD)</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">82%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💉 Avg. Treatment Time:</span>
+                                <span class="stat-value">6-8 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases This Month:</span>
+                                <span class="stat-value">9</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card cow">
+                            <h3>🐄 Matsis (Skin Condition)</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">78%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💉 Avg. Treatment Time:</span>
+                                <span class="stat-value">4 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases This Month:</span>
+                                <span class="stat-value">6</span>
+                            </div>
+                        </div>
+
+                        <!-- Dog Disease Cards -->
+                        <div class="stat-card dog">
+                            <h3>🐕 Fungal Infection</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">91%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💉 Avg. Treatment Time:</span>
+                                <span class="stat-value">7 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases This Month:</span>
+                                <span class="stat-value">14</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card dog">
+                            <h3>🐕 Dermatitis</h3>
+                            <div class="stat-item">
+                                <span class="stat-label">✅ Recovery Rate:</span>
+                                <span class="stat-value">85%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">💉 Avg. Treatment Time:</span>
+                                <span class="stat-value">6 days</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Cases This Month:</span>
+                                <span class="stat-value">10</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-btn next">❯</button>
+                </div>
+            </div>
+
+            <!-- Results Section (Initially Hidden) -->
+            <div id="resultsSection" class="results-section hidden">
+                <!-- Growth Rate Score Card -->
+                <div class="score-card">
+                    <h3>✅ Growth Rate Score</h3>
+                    <div class="score-indicator">
+                        <div id="scoreValue" class="score-value">--</div>
+                        <div id="scoreStatus" class="score-status">--</div>
+                        <div class="score-bar">
+                            <div id="scoreProgress" class="score-progress"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Growth Analysis Graph -->
+                <div class="graph-card">
+                    <h3>📈 Growth Analysis</h3>
+                    <div class="graph-container">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="suggestions-card">
+                    <h3>🧾 Health Recommendations</h3>
+                    <ul id="suggestionsList" class="suggestions-list"></ul>
+                </div>
+
+                <!-- Future Prediction -->
+                <div class="prediction-card">
+                    <h3>🎯 Growth Prediction</h3>
+                    <p id="predictionText" class="prediction-text"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='analytics.js') }}"></script>
+</body>
+</html>

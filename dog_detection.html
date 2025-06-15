@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dog Disease Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="detection-page dog-theme">
+        <div class="detection-container">
+            <h1 class="page-title">Dog Disease Detection</h1>
+            
+            <div class="detection-methods">
+                <div class="method-card">
+                    <h2>Use Camera</h2>
+                    <div class="camera-container">
+                        <video id="video" autoplay playsinline></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <div class="camera-controls">
+                            <button id="start-camera" class="action-btn">Turn On Camera</button>
+                            <button id="capture-btn" class="action-btn" disabled>Capture Image</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="method-divider">
+                    <span>OR</span>
+                </div>
+
+                <div class="method-card">
+                    <h2>Upload Image</h2>
+                    <div class="upload-section">
+                        <div class="upload-icon">📁</div>
+                        <form id="upload-form" class="upload-form">
+                            <input type="file" name="file" id="file" class="file-input" accept="image/*">
+                            <label for="file" class="upload-btn">Choose File</label>
+                            <button type="submit" class="submit-btn">Analyze Image</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-section" id="preview">
+                <h3>Image Preview</h3>
+                <img src="" alt="Preview" class="preview-img" id="preview-img">
+                <div class="disease-warning" id="disease-warning">
+                    Warning: Disease Detected! Please consult a veterinarian.
+                </div>
+            </div>
+            
+            <div class="result-section hidden" id="result">
+                <h2 class="result-title">Detection Result</h2>
+                <div class="result-details">
+                    <p id="prediction-text"></p>
+                    <p id="confidence-text"></p>
+                </div>
+                
+                <div class="disease-info" id="disease-info">
+                    <!-- Disease/Precaution information will be populated here -->
+                </div>
+                
+                <button id="download-report" class="download-btn">
+                    <span class="download-icon">📥</span>
+                    Download Report (PDF)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add jsPDF library before closing body tag -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        let stream = null;
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startBtn = document.getElementById('start-camera');
+        const captureBtn = document.getElementById('capture-btn');
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } 
+                });
+                video.srcObject = stream;
+                startBtn.disabled = true;
+                captureBtn.disabled = false;
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                alert('Could not access camera');
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            // Disable the button during processing
+            captureBtn.disabled = true;
+            captureBtn.textContent = 'Processing...';
+            
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('file', blob, 'capture.jpg');
+                
+                try {
+                    const response = await fetch(`/predict?animal_type=dog`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.error) {
+                        alert(result.error);
+                        return;
+                    }
+                    
+                    // Update preview image
+                    document.getElementById('preview-img').src = canvas.toDataURL('image/jpeg');
+                    document.getElementById('preview').classList.add('active');
+                    
+                    // Handle disease detection UI updates
+                    handlePredictionResult(result);
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error processing image. Please try again.');
+                } finally {
+                    // Reset button state
+                    captureBtn.disabled = false;
+                    captureBtn.textContent = 'Capture Image';
+                }
+            }, 'image/jpeg', 0.8);
+        });
+
+        // Upload image handling
+        const uploadForm = document.getElementById('upload-form');
+        const fileInput = document.getElementById('file');
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = uploadForm.querySelector('.submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Analyzing...';
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch(`/predict?animal_type=dog`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    alert(result.error);
+                    return;
+                }
+                
+                // Update preview image
+                document.getElementById('preview-img').src = URL.createObjectURL(file);
+                document.getElementById('preview').classList.add('active');
+                
+                // Handle disease detection UI updates
+                handlePredictionResult(result);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error processing image. Please try again.');
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Analyze Image';
+            }
+        });
+
+        function generatePDF(result) {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Add header
+                doc.setFontSize(22);
+                doc.setTextColor(76, 175, 80);
+                doc.text("Dog Disease Detection Report", 105, 20, { align: "center" });
+                
+                // Add date and time
+                doc.setFontSize(12);
+                doc.setTextColor(100);
+                const date = new Date().toLocaleString();
+                doc.text(`Generated on: ${date}`, 20, 30);
+                
+                // Add detection results
+                doc.setFontSize(16);
+                doc.setTextColor(0);
+                doc.text("Detection Results", 20, 45);
+                
+                doc.setFontSize(14);
+                doc.text(`Disease: ${result.prediction}`, 20, 55);
+                doc.text(`Confidence: ${(result.confidence * 100).toFixed(2)}%`, 20, 65);
+                
+                let yPos = 85;
+                
+                if (result.prediction.toLowerCase() !== 'healthy') {
+                    // Disease information
+                    doc.setFontSize(16);
+                    doc.text("Disease Information", 20, yPos);
+                    yPos += 15;
+                    
+                    // Add treatments and recommendations
+                    const treatments = [
+                        "Consult veterinarian immediately",
+                        "Follow prescribed medication schedule",
+                        "Keep affected area clean and dry",
+                        "Monitor skin changes daily",
+                        "Prevent scratching or licking of affected areas",
+                        "Complete full course of treatment"
+                    ];
+                    
+                    treatments.forEach(treatment => {
+                        doc.text(`• ${treatment}`, 25, yPos);
+                        yPos += 10;
+                    });
+                } else {
+                    // Preventive care recommendations
+                    doc.setFontSize(16);
+                    doc.text("Preventive Care Recommendations", 20, yPos);
+                    yPos += 15;
+                    
+                    getDogPreventiveCare().forEach(tip => {
+                        const lines = doc.splitTextToSize(`• ${tip}`, 170);
+                        doc.text(lines, 25, yPos);
+                        yPos += 10 * lines.length;
+                    });
+                }
+                
+                // Add footer
+                doc.setFontSize(10);
+                doc.setTextColor(100);
+                doc.text("This report was generated automatically by the Animal Disease Detection System", 105, 280, { align: "center" });
+                
+                // Save the PDF
+                const filename = `Dog-disease-detection-report-${new Date().toISOString().slice(0,10)}.pdf`;
+                doc.save(filename);
+
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+            }
+        }
+
+        function getDogPreventiveCare() {
+            return [
+                'Regular veterinary check-ups and vaccinations',
+                'Monthly flea and tick prevention',
+                'Regular grooming and skin inspection',
+                'Balanced diet with proper nutrients',
+                'Regular exercise and physical activity',
+                'Dental hygiene maintenance',
+                'Clean and dry living environment',
+                'Regular bathing with appropriate shampoo',
+                'Monitor for any skin changes or irritation',
+                'Keep vaccination records up to date'
+            ];
+        }
+
+        function handlePredictionResult(result) {
+            try {
+                const previewSection = document.getElementById('preview');
+                const resultSection = document.getElementById('result');
+                const warningDiv = document.getElementById('disease-warning');
+                const diseaseInfo = document.getElementById('disease-info');
+                const predictionText = document.getElementById('prediction-text');
+                const confidenceText = document.getElementById('confidence-text');
+                const downloadBtn = document.getElementById('download-report');
+
+                // Show result section
+                resultSection.style.display = 'block';
+                resultSection.classList.remove('hidden');
+
+                // Update prediction text and confidence score
+                predictionText.textContent = `Disease: ${result.prediction}`;
+                confidenceText.textContent = `Confidence: ${(result.confidence * 100).toFixed(2)}%`;
+
+                // Check if disease is detected
+                const isDiseaseDetected = result.prediction.toLowerCase() !== 'healthy';
+
+                if (isDiseaseDetected) {
+                    // Disease detected UI updates
+                    previewSection.classList.add('disease-detected');
+                    resultSection.classList.add('disease-detected');
+                    warningDiv.classList.add('visible');
+                    predictionText.style.color = '#d32f2f';
+
+                    // Display disease information
+                    diseaseInfo.innerHTML = `
+                        <div class="disease-details">
+                            <h3>About ${result.prediction}</h3>
+                            <div class="info-section">
+                                <h4>Description</h4>
+                                <p>Description of the detected skin condition</p>
+                            </div>
+                            <div class="info-section">
+                                <h4>Treatment Recommendations</h4>
+                                <ul>
+                                    <li>Consult veterinarian immediately</li>
+                                    <li>Follow prescribed medication schedule</li>
+                                    <li>Keep affected area clean and dry</li>
+                                    <li>Monitor skin changes daily</li>
+                                    <li>Prevent scratching or licking</li>
+                                    <li>Complete full course of treatment</li>
+                                </ul>
+                            </div>
+                        </div>`;
+                } else {
+                    // Healthy result UI updates
+                    predictionText.style.color = '#4CAF50';
+                    diseaseInfo.innerHTML = `
+                        <div class="precautions-details">
+                            <h3>Preventive Care Tips</h3>
+                            <p>Keep your dog healthy with these important precautions:</p>
+                            <ul>
+                                ${getDogPreventiveCare().map(tip => `<li>${tip}</li>`).join('')}
+                            </ul>
+                        </div>`;
+                }
+
+                // Show download button
+                if (downloadBtn) {
+                    downloadBtn.style.display = 'inline-flex';
+                    downloadBtn.innerHTML = '<span class="download-icon">📥</span> Download Report (PDF)';
+                    downloadBtn.onclick = () => generatePDF(result);
+                }
+
+            } catch (error) {
+                console.error('Error in handlePredictionResult:', error);
+            }
+        }
+
+        // Camera and image upload handling code remains unchanged
+
+        // Language translation and initialization code remains unchanged
+    </script>
+</body>
+</html>

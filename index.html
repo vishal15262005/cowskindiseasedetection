@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Animal Disease Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Add translations.js before script.js -->
+    <script src="{{ url_for('static', filename='translations.js') }}"></script>
+</head>
+<body>
+    <div class="language-settings">
+        <button class="settings-btn" onclick="toggleLanguageMenu()">
+            <span class="settings-icon">🌐</span>
+            <span class="current-lang">EN</span>
+        </button>
+        <div class="language-menu" id="languageMenu">
+            <div class="menu-item" onclick="changeLanguage('en')">
+                <span class="lang-flag">🇬🇧</span>
+                English
+            </div>
+            <div class="menu-item" onclick="changeLanguage('ta')">
+                <span class="lang-flag">🇮🇳</span>
+                தமிழ்
+            </div>
+        </div>
+    </div>
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1 id="mainTitle">VetCare AI: AI-Powered Disease Detection and Vet Help for Cows & Dogs</h1>
+            <p id="mainSubtitle">Your Smart Animal Doctor – Anytime, Anywhere</p>
+            <p id="mainDescription" class="subtitle">Scan your cow or dog for skin problems and get expert help in minutes.</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('cow_detection') }}" class="cta-button primary">Detect Cow Disease</a>
+                <a href="{{ url_for('dog_detection') }}" class="cta-button secondary">Detect Dog Disease</a>
+            </div>
+        </div>
+    </div>
+    <div class="news-ticker">
+        <div class="ticker-wrapper">
+            <div class="ticker-content">
+                <span class="ticker-item">🚨 LSD cases rising in Tamil Nadu – take precautions</span>
+                <span class="ticker-item">🌧️ Monsoon season: common skin diseases to look out for</span>
+                <span class="ticker-item">📊 85% increase in early disease detection through AI</span>
+                <span class="ticker-item">💉 Vaccination drive against LSD in progress</span>
+                <span class="ticker-item">⚕️ New treatment protocols for fungal infections in dogs</span>
+                <span class="ticker-item">🔬 Regular health check-ups recommended during rainy season</span>
+            </div>
+        </div>
+    </div>
+    <div class="mini-chat">
+        <div class="chat-header" onclick="toggleChat()">
+            <span class="chat-icon">🤖</span>
+            <span>AI Assistant</span>
+            <span class="minimize-btn">_</span>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    Hello! I can help you with disease detection and vet appointments. What would you like to know?
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Type your question..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">
+                    <span>➤</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="vet-section">
+        <h2 class="section-title">Book a Veterinary Appointment</h2>
+        <p>Connect with experienced veterinarians for professional care</p>
+        <div class="action-buttons">
+            <a href="{{ url_for('vet_appointment') }}" class="vet-cta">
+                Book Appointment
+            </a>
+        </div>
+    </div>
+
+    <!-- Add new Health Analytics section -->
+    <div class="analytics-section">
+        <h2 class="section-title">Health Analytics Feature for Cows</h2>
+        <p class="section-subtitle">Track growth, monitor health metrics, and get personalized care recommendations</p>
+        <div class="action-buttons">
+            <a href="{{ url_for('health_analytics') }}" class="analytics-cta">
+                <span class="analytics-icon">📊</span> Health Analytics
+            </a>
+        </div>
+    </div>
+    <div class="video-section">
+        <h2 class="section-title">Educational Videos</h2>
+        <div class="video-container">
+            <div class="video-card">
+                <a href="https://youtu.be/czvZyBIv_DQ?si=g-VtY664xTDV4GXl" target="_blank" class="video-link">
+                    <div class="video-thumbnail">
+                        <img src="https://img.youtube.com/vi/czvZyBIv_DQ/hqdefault.jpg"
+                         alt="Cow Disease Prevention">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <h3>How to Prevent Common Cow Diseases</h3>
+                </a>
+            </div>
+            <div class="video-card">
+                <a href="https://youtu.be/75iYiX1UdRE?si=qvQ8DM1bg5-pCi33" target="_blank" class="video-link">
+                    <div class="video-thumbnail">
+                        <img src="https://img.youtube.com/vi/75iYiX1UdRE/hqdefault.jpg"
+                         alt="Dog Skin Care">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <h3>Essential Dog Skin Care Tips</h3>
+                </a>
+            </div>
+            <div class="video-card">
+                <a href="https://youtu.be/0zyNzDtBCfI?si=_YvR74InhEZhItx4" target="_blank" class="video-link">
+                    <div class="video-thumbnail">
+                        <img src="https://img.youtube.com/vi/0zyNzDtBCfI/hqdefault.jpg"
+                        alt="Animal Health Guide">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <h3>Complete Guide to Animal Health</h3>
+                </a>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Veterinary Appointment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="appointment-page">
+        <div class="appointment-container">
+            <h1 class="page-title">Book Veterinary Appointment</h1>
+            
+            <!-- Nearby Vets Section -->
+            <div class="nearby-vets-section">
+                <button id="showNearbyVets" class="nearby-vets-btn" onclick="findNearbyVets()">
+                    <span class="map-icon">📍</span>
+                    Show Nearby Vet Hospitals
+                </button>
+            </div>
+
+            <div class="appointment-layout">
+                <!-- User Form Section -->
+                <div class="user-form-section">
+                    <h2>Enter Your Details</h2>
+                    <form id="userDetailsForm" class="appointment-form">
+                        <input type="text" id="userName" placeholder="Your Name" required>
+                        <select id="animalType" required>
+                            <option value="">Select Animal Type</option>
+                            <option value="Cow">Cow</option>
+                            <option value="Dog">Dog</option>
+                        </select>
+                        <input type="number" id="animalAge" placeholder="Animal Age (years)" required min="0" max="30">
+                        <select id="visitReason" required>
+                            <option value="">Select Reason for Visit</option>
+                            <option value="Regular Checkup">Regular Checkup</option>
+                            <option value="Vaccination">Vaccination</option>
+                            <option value="Skin Problem">Skin Problem</option>
+                            <option value="Injury">Injury</option>
+                            <option value="Follow-up">Follow-up Visit</option>
+                            <option value="Emergency">Emergency</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <textarea id="additionalNotes" placeholder="Additional Notes (Optional)" rows="3"></textarea>
+                        <input type="date" id="preferredDate" required>
+                        <input type="time" id="preferredTime" required>
+                        <p class="form-note">* Select a vet from the right to proceed</p>
+                    </form>
+                </div>
+
+                <!-- Vet Cards Section -->
+                <div class="vet-cards-section">
+                    <div class="vet-cards-container">
+                        <!-- Vet cards will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educational Section -->
+            <div class="educational-section">
+                <h2 class="section-title">Pet Care Resources</h2>
+                <div class="resource-cards">
+                    <!-- Preparing for Vet Visit -->
+                    <div class="resource-card">
+                        <div class="resource-icon">🏥</div>
+                        <h3>How to Prepare Your Pet for a Vet Visit</h3>
+                        <ul class="resource-list">
+                            <li>Keep your pet calm and comfortable</li>
+                            <li>Bring medical history and vaccination records</li>
+                            <li>List any symptoms or changes in behavior</li>
+                            <li>Fast if required (ask when booking)</li>
+                            <li>Bring favorite treats or toys for comfort</li>
+                            <li>Arrive 10-15 minutes early</li>
+                            <li>Keep dogs leashed and cats in carriers</li>
+                        </ul>
+                        <div class="additional-info">
+                            <h4>What to Bring:</h4>
+                            <ul class="resource-list">
+                                <li>Previous medical records</li>
+                                <li>Current medications</li>
+                                <li>Recent diet information</li>
+                                <li>Stool sample if requested</li>
+                            </ul>
+                            <h4>Day Before Visit:</h4>
+                            <ul class="resource-list">
+                                <li>Confirm appointment time</li>
+                                <li>Follow fasting instructions</li>
+                                <li>Prepare questions list</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Questions for Vet -->
+                    <div class="resource-card">
+                        <div class="resource-icon">❓</div>
+                        <h3>Important Questions to Ask Your Vet</h3>
+                        <ul class="resource-list">
+                            <li>What preventive care is recommended?</li>
+                            <li>How is my pet's weight and nutrition?</li>
+                            <li>Are vaccinations up to date?</li>
+                            <li>What are common health risks?</li>
+                            <li>How often should I schedule check-ups?</li>
+                            <li>What are normal vs. concerning behaviors?</li>
+                        </ul>
+                        <div class="additional-info">
+                            <h4>Follow-up Questions:</h4>
+                            <ul class="resource-list">
+                                <li>What side effects should I watch for?</li>
+                                <li>When should I schedule next visit?</li>
+                                <li>What emergency signs to monitor?</li>
+                                <li>Are there any lifestyle changes needed?</li>
+                            </ul>
+                            <h4>Diet & Exercise:</h4>
+                            <ul class="resource-list">
+                                <li>Recommended food portions</li>
+                                <li>Exercise requirements</li>
+                                <li>Dietary restrictions</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Signs -->
+                    <div class="resource-card">
+                        <div class="resource-icon">🚨</div>
+                        <h3>Emergency Signs to Watch For</h3>
+                        <div class="emergency-lists">
+                            <div class="animal-emergency">
+                                <h4>In Dogs:</h4>
+                                <ul class="resource-list">
+                                    <li>Difficulty breathing</li>
+                                    <li>Severe vomiting or diarrhea</li>
+                                    <li>Collapse or weakness</li>
+                                    <li>Seizures or convulsions</li>
+                                    <li>Bloated, hard abdomen</li>
+                                    <li>Trauma or bleeding</li>
+                                </ul>
+                            </div>
+                            <div class="animal-emergency">
+                                <h4>In Cows:</h4>
+                                <ul class="resource-list">
+                                    <li>Sudden loss of appetite</li>
+                                    <li>Severe bloating</li>
+                                    <li>Difficulty calving</li>
+                                    <li>High fever</li>
+                                    <li>Sudden milk drop</li>
+                                    <li>Severe lameness</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        const vets = [
+            {
+                name: 'Dr. Vishal',
+                hospital: 'Pet Care Animal Hospital',
+                location: 'Anna Nagar, Chennai',
+                timings: '9:00 AM - 8:00 PM',
+                phone: '7810065192'
+            },
+            {
+                name: 'Dr. Sathvika',
+                hospital: 'City Veterinary Clinic',
+                location: 'T. Nagar, Chennai',
+                timings: '10:00 AM - 7:00 PM',
+                phone: '9952505042'
+            },
+            {
+                name: 'Dr. Hari Haran',
+                hospital: 'Animal Care Center',
+                location: 'Velachery, Chennai',
+                timings: '8:30 AM - 9:00 PM',
+                phone: '9344930883'
+            },
+            {
+                name: 'Dr. Kiswin',
+                hospital: 'Advanced Pet Hospital',
+                location: 'OMR, Chennai',
+                timings: '9:30 AM - 8:30 PM',
+                phone: '9384612151'
+            },
+            {
+                name: 'Dr. Sarasa',
+                hospital: 'Animal Care Center',
+                location: 'Velachery, Chennai',
+                timings: '8:30 AM - 9:00 PM',
+                phone: '8610312809'
+            },
+            {
+                name: 'Dr. Shanmugam',
+                hospital: 'Animal Care Center',
+                location: 'Velachery, Chennai',
+                timings: '8:30 AM - 9:00 PM',
+                phone: '6369359957'
+            },
+            
+        ];
+
+        function createVetCards() {
+            const container = document.querySelector('.vet-cards-container');
+            vets.forEach(vet => {
+                const card = document.createElement('div');
+                card.className = 'vet-card';
+                card.innerHTML = `
+                    <div class="vet-info">
+                        <h3>${vet.name}</h3>
+                        <p class="hospital-name">${vet.hospital}</p>
+                        <p class="location">📍 ${vet.location}</p>
+                        <p class="timings">⏰ ${vet.timings}</p>
+                        <p class="contact">📱 ${vet.phone}</p>
+                        <button class="select-vet-btn" onclick="selectVet('${vet.name}', '${vet.phone}')">
+                            Select & Book
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectVet(vetName, vetPhone) {
+            const userName = document.getElementById('userName').value;
+            const animalType = document.getElementById('animalType').value;
+            const animalAge = document.getElementById('animalAge').value;
+            const visitReason = document.getElementById('visitReason').value;
+            const additionalNotes = document.getElementById('additionalNotes').value;
+            const preferredDate = document.getElementById('preferredDate').value;
+            const preferredTime = document.getElementById('preferredTime').value;
+
+            if (!userName || !animalType || !animalAge || !visitReason || !preferredDate || !preferredTime) {
+                alert('Please fill in all required details before selecting a vet');
+                return;
+            }
+
+            const message = `Hello Dr. ${vetName},\n\n` +
+                `Appointment Request Details:\n` +
+                `Name: ${userName}\n` +
+                `Animal Type: ${animalType}\n` +
+                `Animal Age: ${animalAge} years\n` +
+                `Reason for Visit: ${visitReason}\n` +
+                `Additional Notes: ${additionalNotes || 'None'}\n` +
+                `Preferred Date: ${preferredDate}\n` +
+                `Preferred Time: ${preferredTime}\n\n` +
+                `Please confirm my appointment. Thank you!`;
+
+            const encodedMessage = encodeURIComponent(message);
+            window.open(`https://wa.me/${vetPhone}?text=${encodedMessage}`, '_blank');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createVetCards();
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('preferredDate').min = today;
+        });
+
+        // Simplified findNearbyVets function
+        function findNearbyVets() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        window.open(
+                            `https://www.google.com/maps/search/veterinary+hospitals/@${latitude},${longitude},13z`,
+                            '_blank'
+                        );
+                    },
+                    (error) => {
+                        window.open('https://www.google.com/maps/search/veterinary+hospitals', '_blank');
+                    }
+                );
+            } else {
+                window.open('https://www.google.com/maps/search/veterinary+hospitals', '_blank');
+            }
+        }
+    </script>
+</body>
+</html>
